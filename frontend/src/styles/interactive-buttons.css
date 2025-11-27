@@ -1,0 +1,313 @@
+@layer components {
+  /* Ripple Effect */
+  .btn-ripple {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-ripple::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+    pointer-events: none;
+  }
+
+  .btn-ripple:active::before {
+    width: 300px;
+    height: 300px;
+  }
+
+  /* Gradient Button */
+  .btn-gradient {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    background-size: 200% 200%;
+    animation: gradient-shift 3s ease infinite;
+    transition: all 0.3s ease;
+  }
+
+  .btn-gradient:hover {
+    background-position: right center;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  @keyframes gradient-shift {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  /* Glass Morphism Button */
+  .btn-glass {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+  }
+
+  .btn-glass:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+  }
+
+  /* Glow Button */
+  .btn-glow {
+    position: relative;
+    transition: all 0.3s ease;
+  }
+
+  .btn-glow::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: inherit;
+    border-radius: inherit;
+    filter: blur(10px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+  }
+
+  .btn-glow:hover::before {
+    opacity: 0.7;
+  }
+
+  .btn-glow:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 20px currentColor;
+  }
+
+  /* Neon Button */
+  .btn-neon {
+    color: var(--primary);
+    border: 2px solid var(--primary);
+    background: transparent;
+    position: relative;
+    transition: all 0.3s ease;
+    text-shadow: 0 0 10px currentColor;
+  }
+
+  .btn-neon:hover {
+    color: white;
+    background: var(--primary);
+    box-shadow:
+      0 0 10px var(--primary),
+      0 0 20px var(--primary),
+      0 0 30px var(--primary),
+      inset 0 0 10px var(--primary);
+  }
+
+  /* Shadow Glow */
+  .shadow-glow {
+    box-shadow: 0 0 20px rgba(var(--primary-rgb), 0.5);
+  }
+
+  .shadow-glow-lg {
+    box-shadow: 0 0 40px rgba(var(--primary-rgb), 0.7);
+  }
+
+  /* Shadow Neon */
+  .shadow-neon {
+    box-shadow:
+      0 0 5px theme('colors.purple.400'),
+      0 0 20px theme('colors.purple.600'),
+      0 0 40px theme('colors.purple.800');
+  }
+
+  /* 3D Transform Utilities */
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
+
+  /* Floating Action Button */
+  .fab-enter {
+    animation: fab-enter 0.3s ease-out;
+  }
+
+  @keyframes fab-enter {
+    from {
+      transform: scale(0) rotate(-45deg);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1) rotate(0);
+      opacity: 1;
+    }
+  }
+
+  .fab-action-enter {
+    animation: fab-action-enter 0.4s ease-out;
+  }
+
+  @keyframes fab-action-enter {
+    from {
+      transform: scale(0);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  /* Morph Animation */
+  @keyframes morph {
+    0%, 100% {
+      border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+    }
+    50% {
+      border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%;
+    }
+  }
+
+  .animate-morph {
+    animation: morph 8s ease-in-out infinite;
+  }
+
+  /* Pulse Animation */
+  @keyframes pulse-custom {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.8;
+      transform: scale(1.05);
+    }
+  }
+
+  .animate-pulse-custom {
+    animation: pulse-custom 2s ease-in-out infinite;
+  }
+
+  /* Bounce Animation */
+  @keyframes bounce-custom {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .animate-bounce-custom {
+    animation: bounce-custom 1s ease-in-out infinite;
+  }
+
+  /* Shake Animation */
+  @keyframes shake {
+    0%, 100% {
+      transform: translateX(0);
+    }
+    10%, 30%, 50%, 70%, 90% {
+      transform: translateX(-5px);
+    }
+    20%, 40%, 60%, 80% {
+      transform: translateX(5px);
+    }
+  }
+
+  .animate-shake {
+    animation: shake 0.5s ease-in-out;
+  }
+
+  /* Success Animation */
+  @keyframes success-check {
+    0% {
+      transform: scale(0) rotate(45deg);
+      opacity: 0;
+    }
+    50% {
+      transform: scale(1.2) rotate(45deg);
+    }
+    100% {
+      transform: scale(1) rotate(45deg);
+      opacity: 1;
+    }
+  }
+
+  .animate-success {
+    animation: success-check 0.5s ease-out;
+  }
+
+  /* Error Animation */
+  @keyframes error-shake {
+    0%, 100% {
+      transform: translateX(0);
+    }
+    25% {
+      transform: translateX(-10px);
+    }
+    75% {
+      transform: translateX(10px);
+    }
+  }
+
+  .animate-error {
+    animation: error-shake 0.5s ease-in-out;
+  }
+
+  /* Loading Spinner */
+  @keyframes spin-custom {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .animate-spin-custom {
+    animation: spin-custom 1s linear infinite;
+  }
+
+  /* Confetti Effect */
+  @keyframes confetti-fall {
+    0% {
+      transform: translateY(-100vh) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(100vh) rotate(720deg);
+      opacity: 0;
+    }
+  }
+
+  .confetti-piece {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #f9ca24);
+    animation: confetti-fall 3s ease-out;
+  }
+}

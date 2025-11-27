@@ -1,0 +1,76 @@
+// Last Modified: 2025-11-24 00:30
+{
+  "compilerOptions": {
+    // Strict Type-Checking Options
+    "strict": true,                           // Enable ALL strict type checks
+    "noImplicitAny": true,                    // Error on expressions and declarations with implied 'any'
+    "strictNullChecks": true,                 // Enable strict null checks
+    "strictFunctionTypes": true,              // Enable strict checking of function types
+    "strictBindCallApply": true,              // Enable strict 'bind', 'call', and 'apply' methods
+    "strictPropertyInitialization": true,     // Enable strict checking of property initialization
+    "noImplicitThis": true,                   // Error on 'this' expressions with implied 'any'
+    "alwaysStrict": true,                     // Parse in strict mode and emit "use strict"
+
+    // Additional Checks
+    "noUnusedLocals": true,                   // Report errors on unused locals
+    "noUnusedParameters": true,               // Report errors on unused parameters
+    "noImplicitReturns": true,                // Report error when not all code paths return a value
+    "noFallthroughCasesInSwitch": true,      // Report errors for fallthrough cases in switch
+    "noUncheckedIndexedAccess": true,         // Add undefined to type when accessing with index
+
+    // Module Resolution
+    "target": "ES2022",                       // Latest stable ECMAScript target
+    "module": "ES2022",                       // Use ES modules
+    "lib": ["ES2022"],                        // Type definitions for ES2022
+    "moduleResolution": "node",               // Node.js module resolution
+    "resolveJsonModule": true,                // Allow importing JSON modules
+    "esModuleInterop": true,                  // Emit __importStar and __importDefault helpers
+    "allowSyntheticDefaultImports": true,     // Allow default imports from modules with no default export
+
+    // Emit
+    "declaration": true,                      // Generate .d.ts files
+    "declarationMap": true,                   // Generate sourcemap for .d.ts files
+    "sourceMap": true,                        // Generate .map files
+    "outDir": "./dist",                       // Output directory for compiled files
+    "rootDir": "./",                          // Root directory of source files
+
+    // Interop Constraints
+    "isolatedModules": true,                  // Ensure each file can be safely transpiled
+    "allowJs": true,                          // Allow JavaScript files to be compiled
+    "checkJs": false,                         // Don't type-check JS files (for gradual migration)
+
+    // Advanced
+    "skipLibCheck": true,                     // Skip type checking of declaration files
+    "forceConsistentCasingInFileNames": true, // Disallow inconsistently-cased references
+
+    // Path Mapping
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"],
+      "@api/*": ["./api/*"],
+      "@config/*": ["./config/*"],
+      "@middleware/*": ["./middleware/*"],
+      "@models/*": ["./models/*"],
+      "@services/*": ["./services/*"],
+      "@utils/*": ["./utils/*"],
+      "@types/*": ["./types/*"],
+      "@integrations/*": ["./integrations/*"]
+    }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "types/**/*.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "coverage",
+    "**/*.spec.ts",
+    "**/*.test.ts"
+  ],
+  "ts-node": {
+    "esm": true,
+    "experimentalSpecifierResolution": "node"
+  }
+}

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="BollaLabz - AI-powered personal command center with zero cognitive load" />
+    <meta name="theme-color" content="#3b82f6" />
+
+    <!-- PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="BollaLabz" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="mask-icon" href="/masked-icon.svg" color="#3b82f6" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="BollaLabz Command Center" />
+    <meta property="og:description" content="AI-powered personal command center with zero cognitive load" />
+    <meta property="og:image" content="/og-image.png" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:title" content="BollaLabz Command Center" />
+    <meta property="twitter:description" content="AI-powered personal command center with zero cognitive load" />
+    <meta property="twitter:image" content="/twitter-image.png" />
+
+    <title>BollaLabz Command Center</title>
+
+    <!-- DNS Prefetch for faster external resource loading -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+
+    <!-- Preconnect to external domains (higher priority) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- Preload critical fonts (inline critical font CSS would go here) -->
+    <!-- Note: Add specific font URLs based on what fonts you're actually using -->
+    <style>
+      /* Critical inline CSS to prevent FOUC */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      #root {
+        min-height: 100vh;
+      }
+
+      /* Loading spinner for initial load */
+      .initial-loader {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 40px;
+        height: 40px;
+        border: 3px solid #e5e7eb;
+        border-top-color: #3b82f6;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+
+      /* Dark mode support */
+      .dark {
+        color-scheme: dark;
+      }
+    </style>
+
+    <!-- Prevent FOUC (Flash of Unstyled Content) -->
+    <script>
+      // Apply dark mode immediately to prevent flash
+      const theme = localStorage.getItem('theme') || 'dark';
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+    </script>
+  </head>
+  <body>
+    <noscript>
+      <div style="padding: 2rem; text-align: center; font-family: system-ui, -apple-system, sans-serif;">
+        <h1>JavaScript Required</h1>
+        <p>BollaLabz Command Center requires JavaScript to be enabled for full functionality.</p>
+        <p>Please enable JavaScript in your browser settings and reload the page.</p>
+      </div>
+    </noscript>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

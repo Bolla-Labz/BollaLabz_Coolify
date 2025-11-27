@@ -1,0 +1,38 @@
+# Last Modified: 2025-11-24
+# Docker ignore file for backend
+
+# Dependencies (will be installed in container)
+node_modules/
+npm-debug.log
+yarn-error.log
+# package-lock.json - KEEP THIS for npm ci to work
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Build output
+dist/
+build/
+
+# Logs
+logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Test coverage
+coverage/
+
+# Git
+.git/
+.gitignore

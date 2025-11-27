@@ -1,0 +1,18 @@
+# Nixpacks configuration for Express.js backend
+# Node 22 required for jsdom and DOMPurify compatibility
+
+[phases.setup]
+nixPkgs = ["nodejs_22"]
+
+[phases.install]
+cmds = ["cd /app/backend && npm ci --omit=dev --legacy-peer-deps"]
+
+# Explicitly disable the build phase
+[phases.build]
+cmds = ["echo 'No build required for Express.js backend'"]
+
+[start]
+cmd = "cd backend && node server.js"
+
+[variables]
+NODE_ENV = "production"

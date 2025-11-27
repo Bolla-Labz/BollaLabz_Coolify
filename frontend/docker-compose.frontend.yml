@@ -1,0 +1,135 @@
+# Last Modified: 2025-11-25 03:25
+# BollaLabz Frontend Docker Compose
+# Provides two deployment options: Nginx (production) or Node.js (Railway)
+version: '3.8'
+
+services:
+  # =========================================================================
+  # Option 1: Frontend with Nginx (Recommended for Production)
+  # =========================================================================
+  frontend-nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+      args:
+        VITE_API_URL: ${VITE_API_URL:-/api}
+        VITE_WS_URL: ${VITE_WS_URL:-/ws}
+        VITE_USE_MOCKS: ${VITE_USE_MOCKS:-false}
+        VITE_ENVIRONMENT: ${VITE_ENVIRONMENT:-production}
+        VITE_SENTRY_DSN: ${VITE_SENTRY_DSN}
+        SENTRY_AUTH_TOKEN: ${SENTRY_AUTH_TOKEN}
+        SENTRY_ORG: ${SENTRY_ORG:-bollalabz}
+    container_name: bollalabz-frontend-nginx
+    ports:
+      - "8080:80"
+    environment:
+      # Runtime environment variables (injected by startup script)
+      - VITE_API_URL=${VITE_API_URL:-/api}
+      - VITE_WS_URL=${VITE_WS_URL:-/ws}
+      - VITE_USE_MOCKS=${VITE_USE_MOCKS:-false}
+      - VITE_ENVIRONMENT=${VITE_ENVIRONMENT:-production}
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - bollalabz-network
+    labels:
+      - "com.bollalabz.service=frontend"
+      - "com.bollalabz.version=1.0.0"
+      - "com.bollalabz.description=React frontend with nginx"
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # =========================================================================
+  # Option 2: Frontend with Node.js (Recommended for Railway)
+  # =========================================================================
+  frontend-node:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: node-server
+      args:
+        VITE_API_URL: ${VITE_API_URL:-/api}
+        VITE_WS_URL: ${VITE_WS_URL:-/ws}
+        VITE_USE_MOCKS: ${VITE_USE_MOCKS:-false}
+        VITE_ENVIRONMENT: ${VITE_ENVIRONMENT:-production}
+        VITE_SENTRY_DSN: ${VITE_SENTRY_DSN}
+        SENTRY_AUTH_TOKEN: ${SENTRY_AUTH_TOKEN}
+        SENTRY_ORG: ${SENTRY_ORG:-bollalabz}
+    container_name: bollalabz-frontend-node
+    ports:
+      - "8081:8080"
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+      - VITE_API_URL=${VITE_API_URL:-/api}
+      - VITE_WS_URL=${VITE_WS_URL:-/ws}
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - bollalabz-network
+    labels:
+      - "com.bollalabz.service=frontend"
+      - "com.bollalabz.version=1.0.0"
+      - "com.bollalabz.description=React frontend with Node.js server"
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  bollalabz-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+
+# =========================================================================
+# Usage Instructions
+# =========================================================================
+# Build and run with Nginx (production):
+#   docker-compose -f docker-compose.frontend.yml up -d frontend-nginx
+#
+# Build and run with Node.js (Railway):
+#   docker-compose -f docker-compose.frontend.yml up -d frontend-node
+#
+# Build with custom environment variables:
+#   VITE_API_URL=https://api.bollalabz.com \
+#   VITE_WS_URL=wss://api.bollalabz.com/ws \
+#   docker-compose -f docker-compose.frontend.yml build frontend-nginx
+#
+# View logs:
+#   docker-compose -f docker-compose.frontend.yml logs -f frontend-nginx
+#
+# Stop and remove:
+#   docker-compose -f docker-compose.frontend.yml down

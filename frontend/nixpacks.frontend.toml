@@ -1,0 +1,22 @@
+# Railway Frontend Deployment Configuration
+# Last Modified: 2025-11-23 06:13
+# Serves pre-built Vite assets from committed dist/ directory
+
+[phases.setup]
+nixPkgs = ["nodejs"]
+
+[phases.install]
+# Install only production dependencies with legacy peer deps to avoid conflicts
+cmds = ["npm ci --omit=dev --legacy-peer-deps"]
+
+[phases.build]
+# Build the Vite frontend
+cmds = ["npm run build"]
+
+[start]
+# Explicitly set start command
+cmd = "node serve-frontend.js"
+
+[variables]
+# Disable nixpacks auto-detection
+NIXPACKS_NO_MUSL = "1"

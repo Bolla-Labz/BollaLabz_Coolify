@@ -1,0 +1,109 @@
+==========================================
+BollaLabz API Comprehensive Test Suite
+==========================================
+Base URL: http://localhost:4000
+API Key: dev_api_ke...
+
+Testing Health Endpoints...
+[0;32m✓[0m Health Check (HTTP 200)
+[0;32m✓[0m API Info Root (HTTP 200)
+[0;32m✓[0m API v1 Info (HTTP 200)
+
+Testing Authentication Endpoints...
+[0;31m✗[0m Register New User (Expected 201, got 429)
+   Response: {"success":false,"error":"Too many requests","message":"You have exceeded the rate limit. Please try...
+[0;31m✗[0m Register Duplicate User (Expected 409, got 429)
+   Response: {"success":false,"error":"Too many requests","message":"You have exceeded the rate limit. Please try...
+[0;31m✗[0m Login Valid Credentials (Expected 200, got 429)
+   Response: {"success":false,"error":"Too many requests","message":"You have exceeded the rate limit. Please try...
+[0;31m✗[0m Login Invalid Credentials (Expected 401, got 429)
+   Response: {"success":false,"error":"Too many requests","message":"You have exceeded the rate limit. Please try...
+
+Testing Contacts API...
+[0;32m✓[0m List Contacts (HTTP 200)
+[0;32m✓[0m Create Contact (HTTP 201)
+[0;32m✓[0m Search Contacts (HTTP 200)
+
+Testing Conversations API...
+[0;31m✗[0m List Conversations (Expected 200, got 500)
+   Response: {"success":false,"error":"column cm.timestamp does not exist","stack":"error: column cm.timestamp do...
+[0;31m✗[0m Search Messages (Expected 200, got 500)
+   Response: {"success":false,"error":"invalid input syntax for type integer: \"search\"","stack":"error: invalid...
+
+Testing Calls API...
+[0;32m✓[0m List Calls (HTTP 200)
+[0;32m✓[0m Get Cost Breakdown (HTTP 200)
+[0;32m✓[0m Get Call Volume (HTTP 200)
+
+Testing Tasks API...
+[0;31m✗[0m List Tasks (Expected 200, got 500)
+   Response: {"success":false,"error":"column \"title\" does not exist","stack":"error: column \"title\" does not...
+[0;31m✗[0m Create Task (Expected 201, got 500)
+   Response: {"success":false,"error":"column \"title\" of relation \"scheduled_tasks\" does not exist","stack":"...
+[0;31m✗[0m Filter Tasks (Expected 200, got 500)
+   Response: {"success":false,"error":"column \"title\" does not exist","stack":"error: column \"title\" does not...
+[0;31m✗[0m Get Overdue Tasks (Expected 200, got 500)
+   Response: {"success":false,"error":"column \"due_date\" does not exist","stack":"error: column \"due_date\" do...
+[0;31m✗[0m Get Today Tasks (Expected 200, got 500)
+   Response: {"success":false,"error":"column \"due_date\" does not exist","stack":"error: column \"due_date\" do...
+
+Testing Workflows API...
+[0;32m✓[0m List Workflows (HTTP 200)
+[0;31m✗[0m Create Workflow (Expected 201, got 500)
+   Response: {"success":false,"error":"column \"name\" of relation \"workflow_triggers\" does not exist","stack":...
+
+Testing People API...
+[0;32m✓[0m List People (HTTP 200)
+[0;32m✓[0m Create Person (HTTP 201)
+[0;32m✓[0m Search People (HTTP 200)
+
+Testing Calendar API...
+[0;32m✓[0m List Calendar Events (HTTP 200)
+[0;32m✓[0m Get Upcoming Events (HTTP 200)
+[0;32m✓[0m Get Today Events (HTTP 200)
+
+Testing Analytics API...
+[0;32m✓[0m Dashboard Summary (HTTP 200)
+[0;32m✓[0m Call Analytics (HTTP 200)
+[0;32m✓[0m Message Analytics (HTTP 200)
+[0;32m✓[0m Cost Breakdown (HTTP 200)
+[0;32m✓[0m Trend Analysis (HTTP 200)
+
+Testing Integrations API...
+[0;32m✓[0m Integration Status (HTTP 200)
+
+Testing Error Handling...
+[0;32m✓[0m Invalid Endpoint (HTTP 404)
+
+Testing Input Validation...
+[0;32m✓[0m Create Contact Missing Phone (HTTP 400)
+[0;31m✗[0m Register Weak Password (Expected 400, got 429)
+   Response: {"success":false,"error":"Too many requests","message":"You have exceeded the rate limit. Please try...
+[0;31m✗[0m Register Invalid Email (Expected 400, got 429)
+   Response: {"success":false,"error":"Too many requests","message":"You have exceeded the rate limit. Please try...
+
+==========================================
+Test Summary
+==========================================
+Total Tests: 38
+[0;32mPassed: 24[0m
+[0;31mFailed: 14[0m
+
+Failed Tests:
+  [0;31m✗[0m Register New User - Expected 201, got 429
+  [0;31m✗[0m Register Duplicate User - Expected 409, got 429
+  [0;31m✗[0m Login Valid Credentials - Expected 200, got 429
+  [0;31m✗[0m Login Invalid Credentials - Expected 401, got 429
+  [0;31m✗[0m List Conversations - Expected 200, got 500
+  [0;31m✗[0m Search Messages - Expected 200, got 500
+  [0;31m✗[0m List Tasks - Expected 200, got 500
+  [0;31m✗[0m Create Task - Expected 201, got 500
+  [0;31m✗[0m Filter Tasks - Expected 200, got 500
+  [0;31m✗[0m Get Overdue Tasks - Expected 200, got 500
+  [0;31m✗[0m Get Today Tasks - Expected 200, got 500
+  [0;31m✗[0m Create Workflow - Expected 201, got 500
+  [0;31m✗[0m Register Weak Password - Expected 400, got 429
+  [0;31m✗[0m Register Invalid Email - Expected 400, got 429
+
+Success Rate: 63.2%
+==========================================

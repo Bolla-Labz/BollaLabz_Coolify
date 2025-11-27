@@ -1,0 +1,95 @@
+{
+  "compilerOptions": {
+    /* Language and Environment */
+    "target": "ES2020",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+
+    /* Strict Type-Checking Options */
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "useUnknownInCatchVariables": true,
+    "alwaysStrict": true,
+
+    /* Additional Checks */
+    "noUnusedLocals": false, // Too many false positives with React imports
+    "noUnusedParameters": false, // Allow unused parameters for now
+    "exactOptionalPropertyTypes": false, // Requires significant refactoring
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": false, // Requires too much refactoring
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": false, // Allow dot notation for env vars
+    "allowUnusedLabels": false,
+    "allowUnreachableCode": false,
+
+    /* Module Resolution Options */
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+
+    /* Emit Options */
+    "noEmit": true,
+    "sourceMap": true,
+    "removeComments": true,
+    "importHelpers": true,
+    "verbatimModuleSyntax": false,
+    "downlevelIteration": true,
+
+    /* Skip Lib Check */
+    "skipLibCheck": true,
+
+    /* Path Mapping */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@components/*": ["./src/components/*"],
+      "@pages/*": ["./src/pages/*"],
+      "@lib/*": ["./src/lib/*"],
+      "@hooks/*": ["./src/hooks/*"],
+      "@stores/*": ["./src/stores/*"],
+      "@types/*": ["./src/types/*"],
+      "@assets/*": ["./src/assets/*"],
+      "@utils/*": ["./src/utils/*"],
+      "@features/*": ["./src/features/*"]
+    },
+
+    /* Advanced Options */
+    "types": [
+      "vite/client",
+      "vite-plugin-pwa/client",
+      "node",
+      "@types/node"
+    ]
+  },
+  "include": [
+    "src/**/*",
+    "src/**/*.tsx",
+    "src/**/*.ts",
+    "src/**/*.jsx",
+    "src/**/*.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    "coverage",
+    "*.config.js",
+    "*.config.d.ts",
+    "**/*.spec.ts",
+    "**/*.test.ts"
+  ],
+  "references": [
+    { "path": "./tsconfig.node.json" }
+  ]
+}

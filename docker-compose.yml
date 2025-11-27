@@ -1,0 +1,195 @@
+# Last Modified: 2025-11-26 17:45
+# BollaLabz Docker Compose - Coolify Deployment
+# Optimized for Coolify management on VPS #2 (93.127.197.222)
+#
+# Key Changes from production version:
+# - Removed PostgreSQL service (use Coolify managed database)
+# - Removed Redis service (using Redis Cloud external service)
+# - Removed Nginx service (Traefik handles routing)
+# - Removed Certbot service (Traefik handles SSL)
+# - Removed all network definitions (Coolify creates automatically)
+# - Removed replica configurations (not supported in compose)
+# - Added Traefik labels for proper routing
+# - Converted environment variables to ${VAR:?} syntax
+
+version: '3.8'
+
+services:
+  # Backend API (Node.js/Express)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: production
+    image: bollalabz/backend:latest
+    container_name: bollalabz-backend
+    environment:
+      # Application
+      NODE_ENV: production
+      PORT: 3001
+      APP_NAME: ${APP_NAME:?APP_NAME required}
+      APP_VERSION: ${APP_VERSION:-4.2.0}
+
+      # Database (Coolify Managed PostgreSQL)
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL required}
+      DB_SSL: ${DB_SSL:-false}
+      DB_POOL_MIN: ${DB_POOL_MIN:-2}
+      DB_POOL_MAX: ${DB_POOL_MAX:-20}
+
+      # Redis Cloud (External Managed Service)
+      REDIS_HOST: ${REDIS_HOST:?REDIS_HOST required}
+      REDIS_PORT: ${REDIS_PORT:?REDIS_PORT required}
+      REDIS_USERNAME: ${REDIS_USERNAME:-default}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?REDIS_PASSWORD required}
+      REDIS_TLS: ${REDIS_TLS:-true}
+      CACHE_ENABLED: ${CACHE_ENABLED:-true}
+
+      # Security
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET required}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?JWT_REFRESH_SECRET required}
+      JWT_ACCESS_EXPIRY: ${JWT_ACCESS_EXPIRY:-15m}
+      JWT_REFRESH_EXPIRY: ${JWT_REFRESH_EXPIRY:-7d}
+      API_KEY: ${API_KEY:?API_KEY required}
+      SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET required}
+      BCRYPT_ROUNDS: ${BCRYPT_ROUNDS:-12}
+
+      # CORS & Frontend
+      FRONTEND_URL: ${FRONTEND_URL:?FRONTEND_URL required}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:?ALLOWED_ORIGINS required}
+      CORS_CREDENTIALS: true
+
+      # Twilio (Voice/SMS)
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID:?TWILIO_ACCOUNT_SID required}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN:?TWILIO_AUTH_TOKEN required}
+      TWILIO_PHONE_NUMBER: ${TWILIO_PHONE_NUMBER:?TWILIO_PHONE_NUMBER required}
+      TWILIO_WEBHOOK_URL: ${TWILIO_WEBHOOK_URL}
+
+      # AI Services
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:?ANTHROPIC_API_KEY required}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-sonnet-4-5-20250929}
+      ELEVENLABS_API_KEY: ${ELEVENLABS_API_KEY}
+      VAPI_API_KEY: ${VAPI_API_KEY}
+
+      # Monitoring
+      SENTRY_DSN: ${SENTRY_DSN}
+      SENTRY_ENVIRONMENT: production
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+
+      # Feature Flags
+      FEATURE_VOICE_AGENTS: ${FEATURE_VOICE_AGENTS:-true}
+      FEATURE_CALENDAR_INTEGRATION: ${FEATURE_CALENDAR_INTEGRATION:-true}
+      FEATURE_AI_SEARCH: ${FEATURE_AI_SEARCH:-true}
+
+    volumes:
+      - backend_logs:/app/logs
+      - backend_uploads:/app/uploads
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3001/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "10"
+        compress: "true"
+    labels:
+      # Coolify Management
+      - "coolify.managed=true"
+      - "coolify.type=application"
+      - "coolify.port=3001"
+      - "coolify.healthcheck.path=/api/v1/health"
+
+      # Traefik Routing
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`${DOMAIN:?DOMAIN required}`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.tls=true"
+      - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.backend.loadbalancer.server.port=3001"
+
+      # WebSocket Support
+      - "traefik.http.routers.backend-ws.rule=Host(`${DOMAIN:?DOMAIN required}`) && PathPrefix(`/socket.io`)"
+      - "traefik.http.routers.backend-ws.entrypoints=websecure"
+      - "traefik.http.routers.backend-ws.tls=true"
+      - "traefik.http.services.backend-ws.loadbalancer.server.port=3001"
+
+  # Frontend (React/Vite with Nginx)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: production
+      args:
+        VITE_API_URL: https://${DOMAIN:?DOMAIN required}/api/v1
+        VITE_WS_URL: wss://${DOMAIN:?DOMAIN required}
+        VITE_USE_MOCKS: "false"
+        VITE_ENVIRONMENT: production
+        VITE_SENTRY_DSN: ${VITE_SENTRY_DSN}
+    image: bollalabz/frontend:latest
+    container_name: bollalabz-frontend
+    environment:
+      NODE_ENV: production
+      VITE_API_URL: https://${DOMAIN:?DOMAIN required}/api/v1
+      VITE_WS_URL: wss://${DOMAIN:?DOMAIN required}
+      VITE_ENVIRONMENT: production
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "10"
+        compress: "true"
+    labels:
+      # Coolify Management
+      - "coolify.managed=true"
+      - "coolify.type=application"
+      - "coolify.port=80"
+      - "coolify.domains=${DOMAIN:?DOMAIN required}"
+
+      # Traefik Routing
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`${DOMAIN:?DOMAIN required}`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls=true"
+      - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
+
+      # Security Headers
+      - "traefik.http.middlewares.frontend-headers.headers.customResponseHeaders.X-Frame-Options=DENY"
+      - "traefik.http.middlewares.frontend-headers.headers.customResponseHeaders.X-Content-Type-Options=nosniff"
+      - "traefik.http.middlewares.frontend-headers.headers.customResponseHeaders.Referrer-Policy=strict-origin-when-cross-origin"
+      - "traefik.http.middlewares.frontend-headers.headers.customResponseHeaders.X-XSS-Protection=1; mode=block"
+      - "traefik.http.routers.frontend.middlewares=frontend-headers"
+
+volumes:
+  backend_logs:
+    driver: local
+  backend_uploads:
+    driver: local
+
+# Notes for Coolify Deployment:
+# 1. PostgreSQL: Use Coolify managed database service, not compose
+# 2. Redis: Use Redis Cloud external service (set REDIS_* env vars)
+# 3. Nginx: REMOVED - Traefik handles all routing and load balancing
+# 4. Certbot: REMOVED - Traefik handles SSL/TLS with Let's Encrypt
+# 5. Networks: REMOVED - Coolify creates networks automatically
+# 6. Replicas: REMOVED - Not supported in docker-compose (use swarm mode if needed)
+# 7. All environment variables should be set in Coolify's environment manager
+# 8. Secrets (DB_PASSWORD, JWT_SECRET, etc.) should use Coolify's vault
+# 9. Health checks are critical for Coolify's deployment verification
+# 10. Logging is JSON format for easy parsing by Coolify
+# 11. Required env vars use ${VAR:?} syntax to fail fast if missing
+# 12. DNS must point to VPS #2 (93.127.197.222), not control plane
