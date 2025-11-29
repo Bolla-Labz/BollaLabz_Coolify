@@ -1,0 +1,66 @@
+{
+  "name": "@repo/types",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Shared TypeScript types for BollaLabz monorepo",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./api": {
+      "types": "./dist/api.d.ts",
+      "import": "./dist/api.mjs",
+      "require": "./dist/api.js"
+    },
+    "./contacts": {
+      "types": "./dist/contacts.d.ts",
+      "import": "./dist/contacts.mjs",
+      "require": "./dist/contacts.js"
+    },
+    "./voice": {
+      "types": "./dist/voice.d.ts",
+      "import": "./dist/voice.mjs",
+      "require": "./dist/voice.js"
+    },
+    "./productivity": {
+      "types": "./dist/productivity.d.ts",
+      "import": "./dist/productivity.mjs",
+      "require": "./dist/productivity.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsup --watch",
+    "clean": "rimraf dist .turbo",
+    "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.5",
+    "rimraf": "6.0.1",
+    "tsup": "8.3.5",
+    "typescript": "5.9.3"
+  },
+  "tsup": {
+    "entry": [
+      "src/index.ts",
+      "src/api.ts",
+      "src/contacts.ts",
+      "src/voice.ts",
+      "src/productivity.ts"
+    ],
+    "format": ["cjs", "esm"],
+    "dts": {
+      "resolve": true
+    },
+    "splitting": false,
+    "sourcemap": true,
+    "clean": true,
+    "minify": false,
+    "skipNodeModulesBundle": true
+  }
+}
