@@ -1,4 +1,4 @@
-# 10 December 2025 16 00 00
+# 10 December 2025 16 15 00
 # BollaLabz API - Coolify-Compatible Multi-Stage Build
 # Simplified for Coolify deployment (no BuildKit cache mounts)
 
@@ -24,7 +24,8 @@ COPY apps/api/package.json ./apps/api/
 
 # Install all dependencies (including devDeps needed for build)
 # Override NODE_ENV at command level to prevent Coolify's injected ARG from skipping devDeps
-RUN NODE_ENV=development pnpm install --frozen-lockfile
+# Use prefer-frozen-lockfile instead of frozen-lockfile to handle platform differences
+RUN NODE_ENV=development pnpm install --prefer-frozen-lockfile
 
 # Copy source code
 COPY packages ./packages
@@ -56,7 +57,7 @@ COPY packages/types/package.json ./packages/types/
 COPY apps/api/package.json ./apps/api/
 
 # Install production dependencies only
-RUN pnpm install --frozen-lockfile --prod --ignore-scripts
+RUN pnpm install --prefer-frozen-lockfile --prod --ignore-scripts
 
 # Copy built artifacts from builder
 COPY --from=builder --chown=bollalabz:nodejs /app/apps/api/dist ./apps/api/dist

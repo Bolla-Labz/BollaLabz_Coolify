@@ -1,4 +1,4 @@
-# 10 December 2025 16 00 00
+# 10 December 2025 16 15 00
 # BollaLabz Web - Coolify-Compatible Next.js Standalone Build
 # Simplified for Coolify deployment (no BuildKit cache mounts)
 
@@ -30,7 +30,8 @@ COPY apps/web/package.json ./apps/web/
 
 # Install dependencies (including devDeps needed for build)
 # Override NODE_ENV at command level to prevent Coolify's injected ARG from skipping devDeps
-RUN NODE_ENV=development pnpm install --frozen-lockfile
+# Use prefer-frozen-lockfile instead of frozen-lockfile to handle platform differences
+RUN NODE_ENV=development pnpm install --prefer-frozen-lockfile
 
 # Copy source code
 COPY packages ./packages
