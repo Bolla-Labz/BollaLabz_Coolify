@@ -1,6 +1,6 @@
-# 10 December 2025 08 45 00
-# BollaLabz - Coolify Production Deployment with Build Support
-# Configured for Coolify's Docker Compose buildpack with Traefik
+# 10 December 2025 17 30 00
+# BollaLabz - Coolify Production Deployment with Pre-Built Images
+# Uses Docker Hub images: sergiobolla/bollalabz:api-latest, sergiobolla/bollalabz:web-latest
 
 services:
   # ============================================
@@ -49,12 +49,10 @@ services:
       - default
 
   # ============================================
-  # BollaLabz API (Built from Dockerfile)
+  # BollaLabz API (Pre-Built from Docker Hub)
   # ============================================
   api:
-    build:
-      context: .
-      dockerfile: apps/api/Dockerfile
+    image: sergiobolla/bollalabz:api-latest
     restart: unless-stopped
     depends_on:
       postgres:
@@ -104,15 +102,10 @@ services:
       - coolify
 
   # ============================================
-  # BollaLabz Web (Built from Dockerfile)
+  # BollaLabz Web (Pre-Built from Docker Hub)
   # ============================================
   web:
-    build:
-      context: .
-      dockerfile: apps/web/Dockerfile
-      args:
-        - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
-        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://bollalabz.com}
+    image: sergiobolla/bollalabz:web-latest
     restart: unless-stopped
     depends_on:
       api:
