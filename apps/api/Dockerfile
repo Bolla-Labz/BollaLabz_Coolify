@@ -1,4 +1,4 @@
-# 10 December 2025 09 10 00
+# 10 December 2025 15 45 00
 # BollaLabz API - Coolify-Compatible Multi-Stage Build
 # Simplified for Coolify deployment (no BuildKit cache mounts)
 
@@ -7,6 +7,10 @@
 # ============================================
 FROM node:22-alpine AS builder
 WORKDIR /app
+
+# CRITICAL: Override NODE_ENV to development for build stage
+# Coolify injects NODE_ENV=production as build ARG which causes pnpm to skip devDeps
+ENV NODE_ENV=development
 
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@9.14.0 --activate
@@ -18,7 +22,7 @@ COPY packages/types/package.json ./packages/types/
 COPY packages/config/package.json ./packages/config/
 COPY apps/api/package.json ./apps/api/
 
-# Install all dependencies
+# Install all dependencies (including devDeps needed for build)
 RUN pnpm install --frozen-lockfile
 
 # Copy source code

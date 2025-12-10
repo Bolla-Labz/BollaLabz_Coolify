@@ -1,4 +1,4 @@
-# 10 December 2025 09 10 00
+# 10 December 2025 15 45 00
 # BollaLabz Web - Coolify-Compatible Next.js Standalone Build
 # Simplified for Coolify deployment (no BuildKit cache mounts)
 
@@ -7,6 +7,10 @@
 # ============================================
 FROM node:22-alpine AS builder
 WORKDIR /app
+
+# CRITICAL: Override NODE_ENV to development for dependency installation
+# Coolify injects NODE_ENV=production as build ARG which causes pnpm to skip devDeps
+ENV NODE_ENV=development
 
 # Install pnpm
 ENV PNPM_HOME="/pnpm"
@@ -24,7 +28,7 @@ COPY packages/config/package.json ./packages/config/
 COPY packages/ui/package.json ./packages/ui/
 COPY apps/web/package.json ./apps/web/
 
-# Install dependencies
+# Install dependencies (including devDeps needed for build)
 RUN pnpm install --frozen-lockfile
 
 # Copy source code
@@ -35,7 +39,7 @@ COPY apps/web ./apps/web
 ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 ARG NEXT_PUBLIC_API_URL
 
-# Set build environment
+# Set build environment - NOW set production for Next.js build optimization
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
