@@ -1,7 +1,6 @@
-# 10 December 2025 08 15 00
-# BollaLabz - Coolify Production Deployment with Pre-built Images
-# Uses images from Docker Hub: sergiobolla/bollalabz:api-latest and web-latest
-# Configured for Coolify's Traefik proxy integration
+# 10 December 2025 08 45 00
+# BollaLabz - Coolify Production Deployment with Build Support
+# Configured for Coolify's Docker Compose buildpack with Traefik
 
 services:
   # ============================================
@@ -50,10 +49,12 @@ services:
       - default
 
   # ============================================
-  # BollaLabz API (Pre-built from Docker Hub)
+  # BollaLabz API (Built from Dockerfile)
   # ============================================
   api:
-    image: sergiobolla/bollalabz:api-latest
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
     restart: unless-stopped
     depends_on:
       postgres:
@@ -89,7 +90,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 30s
+      start_period: 60s
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.bollalabz-api.rule=Host(`bollalabz.com`) && PathPrefix(`/api`)"
@@ -103,10 +104,15 @@ services:
       - coolify
 
   # ============================================
-  # BollaLabz Web (Pre-built from Docker Hub)
+  # BollaLabz Web (Built from Dockerfile)
   # ============================================
   web:
-    image: sergiobolla/bollalabz:web-latest
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://bollalabz.com}
     restart: unless-stopped
     depends_on:
       api:
@@ -127,7 +133,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 30s
+      start_period: 60s
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.bollalabz-web.rule=Host(`bollalabz.com`) || Host(`www.bollalabz.com`)"
