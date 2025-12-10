@@ -1,6 +1,6 @@
-# 10 December 2025 17 00 00
+# 10 December 2025 18 00 00
 # BollaLabz Web - Coolify-Compatible Next.js Standalone Build
-# Simplified for Coolify deployment (no BuildKit cache mounts)
+# Uses direct pnpm build commands (no turbo) for Coolify compatibility
 
 # ============================================
 # Build Stage
@@ -48,8 +48,10 @@ ENV NODE_ENV=production
 ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
-# Build the Next.js app
-RUN pnpm turbo run build --filter=@repo/web...
+# Build dependencies first, then web app
+RUN cd packages/types && pnpm run build && \
+    cd ../ui && pnpm run build && \
+    cd ../../apps/web && pnpm run build
 
 # ============================================
 # Production Runner

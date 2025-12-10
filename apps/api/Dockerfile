@@ -1,6 +1,6 @@
-# 10 December 2025 17 00 00
+# 10 December 2025 18 00 00
 # BollaLabz API - Coolify-Compatible Multi-Stage Build
-# Simplified for Coolify deployment (no BuildKit cache mounts)
+# Uses direct pnpm build commands (no turbo) for Coolify compatibility
 
 # ============================================
 # Stage 1: Build Application
@@ -33,8 +33,10 @@ RUN NODE_ENV=development pnpm install --prefer-frozen-lockfile
 COPY packages ./packages
 COPY apps/api ./apps/api
 
-# Build
-RUN pnpm turbo run build --filter=@repo/api...
+# Build dependencies first, then API
+RUN cd packages/types && pnpm run build && \
+    cd ../db && pnpm run build && \
+    cd ../../apps/api && pnpm run build
 
 # ============================================
 # Stage 2: Production Runtime
