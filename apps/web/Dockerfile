@@ -1,4 +1,4 @@
-# 10 December 2025 16 15 00
+# 10 December 2025 16 30 00
 # BollaLabz Web - Coolify-Compatible Next.js Standalone Build
 # Simplified for Coolify deployment (no BuildKit cache mounts)
 
@@ -20,12 +20,13 @@ RUN corepack enable && corepack prepare pnpm@9.14.0 --activate
 # Copy .npmrc for hoisted node_modules
 COPY .npmrc ./
 
-# Copy dependency manifests
+# Copy dependency manifests (must include ALL workspace packages for pnpm)
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json turbo.json ./
 COPY packages/db/package.json ./packages/db/
 COPY packages/types/package.json ./packages/types/
 COPY packages/config/package.json ./packages/config/
 COPY packages/ui/package.json ./packages/ui/
+COPY apps/api/package.json ./apps/api/
 COPY apps/web/package.json ./apps/web/
 
 # Install dependencies (including devDeps needed for build)

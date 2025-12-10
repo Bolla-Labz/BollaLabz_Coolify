@@ -1,4 +1,4 @@
-# 10 December 2025 16 15 00
+# 10 December 2025 16 30 00
 # BollaLabz API - Coolify-Compatible Multi-Stage Build
 # Simplified for Coolify deployment (no BuildKit cache mounts)
 
@@ -15,12 +15,14 @@ ENV NODE_ENV=development
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@9.14.0 --activate
 
-# Copy dependency manifests
+# Copy dependency manifests (must include ALL workspace packages for pnpm)
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json turbo.json .npmrc ./
 COPY packages/db/package.json ./packages/db/
 COPY packages/types/package.json ./packages/types/
 COPY packages/config/package.json ./packages/config/
+COPY packages/ui/package.json ./packages/ui/
 COPY apps/api/package.json ./apps/api/
+COPY apps/web/package.json ./apps/web/
 
 # Install all dependencies (including devDeps needed for build)
 # Override NODE_ENV at command level to prevent Coolify's injected ARG from skipping devDeps
@@ -47,22 +49,17 @@ RUN apk add --no-cache curl dumb-init && apk upgrade --no-cache
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 bollalabz
 
-# Install pnpm for production deps
-RUN corepack enable && corepack prepare pnpm@9.14.0 --activate
-
-# Copy dependency manifests
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json .npmrc ./
-COPY packages/db/package.json ./packages/db/
-COPY packages/types/package.json ./packages/types/
-COPY apps/api/package.json ./apps/api/
-
-# Install production dependencies only
-RUN pnpm install --prefer-frozen-lockfile --prod --ignore-scripts
+# Copy node_modules from builder (already installed all deps)
+COPY --from=builder /app/node_modules ./node_modules
 
 # Copy built artifacts from builder
 COPY --from=builder --chown=bollalabz:nodejs /app/apps/api/dist ./apps/api/dist
 COPY --from=builder --chown=bollalabz:nodejs /app/packages/db/dist ./packages/db/dist
 COPY --from=builder --chown=bollalabz:nodejs /app/packages/types/dist ./packages/types/dist
+
+# Copy package.json for node resolution
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/apps/api/package.json ./apps/api/package.json
 
 # Set ownership
 RUN chown -R bollalabz:nodejs /app
