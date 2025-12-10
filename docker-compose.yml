@@ -1,26 +1,21 @@
-# 09 December 2025 14 47 00
-# BollaLabz - Coolify Production Docker Compose
-# Optimized for VPS deployment with resource limits and health monitoring
-
-version: '3.8'
+# 10 December 2025 07 30 00
+# BollaLabz - Coolify Production Deployment with Pre-built Images
+# Uses images from Docker Hub: sergiobolla/bollalabz:api-latest and web-latest
 
 services:
   # ============================================
-  # PostgreSQL Database
+  # PostgreSQL Database with pgvector
   # ============================================
   postgres:
-    image: postgres:16-alpine
+    image: pgvector/pgvector:pg17
     container_name: bollalabz-postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-bollalabz}
       POSTGRES_USER: ${POSTGRES_USER:-bollalabz}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=en_US.UTF-8"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-bollalabz} -d ${POSTGRES_DB:-bollalabz}"]
       interval: 10s
@@ -32,16 +27,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 512M
-        reservations:
-          cpus: '0.5'
-          memory: 256M
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+          memory: 1G
 
   # ============================================
   # Redis Cache & Queue
@@ -59,10 +45,8 @@ services:
       --requirepass ${REDIS_PASSWORD}
     volumes:
       - redis_data:/data
-    ports:
-      - "${REDIS_PORT:-6379}:6379"
     healthcheck:
-      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 10s
       timeout: 3s
       retries: 5
@@ -72,26 +56,13 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.5'
           memory: 256M
-        reservations:
-          cpus: '0.25'
-          memory: 128M
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
 
   # ============================================
-  # BollaLabz API (Hono Server)
+  # BollaLabz API (Pre-built from Docker Hub)
   # ============================================
   api:
-    build:
-      context: .
-      dockerfile: apps/api/Dockerfile
-      args:
-        NODE_ENV: production
+    image: sergiobolla/bollalabz:api-latest
     container_name: bollalabz-api
     restart: unless-stopped
     depends_on:
@@ -100,35 +71,27 @@ services:
       redis:
         condition: service_healthy
     environment:
-      # Node.js Configuration
       NODE_ENV: production
       PORT: 4000
       HOST: 0.0.0.0
-
-      # Database Configuration
-      DATABASE_URL: postgresql://${POSTGRES_USER:-bollalabz}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-bollalabz}?schema=public&connection_limit=10&pool_timeout=30
-
-      # Redis Configuration
+      DATABASE_URL: postgresql://${POSTGRES_USER:-bollalabz}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-bollalabz}
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD}
-
-      # API Configuration
-      API_VERSION: ${API_VERSION:-1.0.0}
-      CORS_ORIGIN: ${CORS_ORIGIN}
-
-      # Authentication
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      CORS_ORIGIN: ${CORS_ORIGIN:-https://bollalabz.com}
       CLERK_SECRET_KEY: ${CLERK_SECRET_KEY}
-      CLERK_PUBLISHABLE_KEY: ${CLERK_PUBLISHABLE_KEY}
-
-      # External Services
-      TELNYX_API_KEY: ${TELNYX_API_KEY}
-      TELNYX_PUBLIC_KEY: ${TELNYX_PUBLIC_KEY}
+      CLERK_API_URL: ${CLERK_API_URL:-https://api.clerk.com}
+      CLERK_JWKS_URL: ${CLERK_JWKS_URL:-https://clerk.bollalabz.com/.well-known/jwks.json}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      DEEPGRAM_API_KEY: ${DEEPGRAM_API_KEY}
+      VOYAGE_API_KEY: ${VOYAGE_API_KEY}
+      ELEVENLABS_API_KEY: ${ELEVENLABS_API_KEY}
+      ELEVENLABS_VOICE_ID: ${ELEVENLABS_VOICE_ID}
       TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID}
       TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN}
-      DEEPGRAM_API_KEY: ${DEEPGRAM_API_KEY}
-      ELEVENLABS_API_KEY: ${ELEVENLABS_API_KEY}
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      TWILIO_PHONE_NUMBER: ${TWILIO_PHONE_NUMBER}
     ports:
       - "${API_PORT:-4000}:4000"
     healthcheck:
@@ -142,48 +105,26 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.5'
           memory: 1G
-        reservations:
-          cpus: '0.5'
-          memory: 512M
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "50m"
-        max-file: "5"
 
   # ============================================
-  # BollaLabz Web (Next.js)
+  # BollaLabz Web (Pre-built from Docker Hub)
   # ============================================
   web:
-    build:
-      context: .
-      dockerfile: apps/web/Dockerfile
-      args:
-        NODE_ENV: production
-        NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${CLERK_PUBLISHABLE_KEY}
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-        CLERK_SECRET_KEY: ${CLERK_SECRET_KEY}
+    image: sergiobolla/bollalabz:web-latest
     container_name: bollalabz-web
     restart: unless-stopped
     depends_on:
       api:
         condition: service_healthy
     environment:
-      # Node.js Configuration
       NODE_ENV: production
       PORT: 3000
       HOSTNAME: 0.0.0.0
-
-      # Next.js Configuration
       NEXT_TELEMETRY_DISABLED: 1
-
-      # Public Environment Variables
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${CLERK_PUBLISHABLE_KEY}
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-
-      # Server-side Environment Variables
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://bollalabz.com}
+      NEXT_PUBLIC_CLERK_FRONTEND_API: ${NEXT_PUBLIC_CLERK_FRONTEND_API:-https://clerk.bollalabz.com}
       CLERK_SECRET_KEY: ${CLERK_SECRET_KEY}
     ports:
       - "${WEB_PORT:-3000}:3000"
@@ -198,16 +139,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 768M
-        reservations:
-          cpus: '0.5'
-          memory: 384M
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "50m"
-        max-file: "5"
+          memory: 512M
 
 # ============================================
 # Networks
@@ -215,9 +147,6 @@ services:
 networks:
   bollalabz-network:
     driver: bridge
-    ipam:
-      config:
-        - subnet: 172.20.0.0/16
 
 # ============================================
 # Volumes
