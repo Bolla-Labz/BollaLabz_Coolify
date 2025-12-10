@@ -1,5 +1,7 @@
 /**
  * Voice Pipeline Types
+ *
+ * Updated: 08 December 2025 20 45 00
  */
 
 // Voice session
@@ -88,7 +90,8 @@ export interface PhoneCallData {
   to: string;
   direction: 'inbound' | 'outbound';
   status: CallStatus;
-  provider: string;
+  provider: 'telnyx' | 'twilio' | string;
+  providerId?: string;
   cost?: number;
   recordingUrl?: string;
 }
@@ -117,8 +120,10 @@ export interface PhoneRecord {
   recordingUrl?: string;
   transcriptId?: string;
   cost?: number;
-  provider: string;
+  provider: 'telnyx' | 'twilio' | string;
+  providerId?: string;
   metadata?: Record<string, unknown>;
+  deletedAt?: string | null;
 }
 
 // Sentiment analysis

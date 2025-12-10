@@ -1,3 +1,5 @@
+// 08 December 2025 06 45 30
+
 /**
  * Core API Types
  */
@@ -26,6 +28,8 @@ export interface ApiMetadata {
   version: string;
   requestId: string;
   duration?: number;
+  // Allow additional custom properties for route-specific metadata
+  [key: string]: unknown;
 }
 
 // Paginated response wrapper
@@ -50,6 +54,7 @@ export interface PaginationParams {
 export interface SearchParams extends PaginationParams {
   q?: string;
   filters?: Record<string, unknown>;
+  [key: string]: unknown;
 }
 
 // Batch operation response

@@ -1,0 +1,150 @@
+# 10 December 2025 06 35 00
+# BollaLabz Production - VPS Deployment with Traefik + LIVE Clerk
+# Target: Hostinger VPS (2 CPU, 8GB RAM) | Domain: bollalabz.com
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    container_name: bollalabz-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: bollalabz
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: bollalabz
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bollalabz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bollalabz
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+
+  redis:
+    image: redis:7-alpine
+    container_name: bollalabz-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a $$REDIS_PASSWORD ping || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    networks:
+      - bollalabz
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  api:
+    image: sergiobolla/bollalabz:api
+    container_name: bollalabz-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_URL: postgresql://bollalabz:${POSTGRES_PASSWORD}@postgres:5432/bollalabz
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      CORS_ORIGIN: https://bollalabz.com
+      CLERK_SECRET_KEY: ${CLERK_SECRET_KEY}
+      CLERK_API_URL: https://api.clerk.com
+      CLERK_JWKS_URL: https://clerk.bollalabz.com/.well-known/jwks.json
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      DEEPGRAM_API_KEY: ${DEEPGRAM_API_KEY}
+      VOYAGE_API_KEY: ${VOYAGE_API_KEY}
+      ELEVENLABS_API_KEY: ${ELEVENLABS_API_KEY}
+      ELEVENLABS_VOICE_ID: ${ELEVENLABS_VOICE_ID}
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN}
+      TWILIO_PHONE_NUMBER: ${TWILIO_PHONE_NUMBER}
+    expose:
+      - "4000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/api/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=coolify"
+      - "traefik.http.routers.bollalabz-api.rule=Host(`bollalabz.com`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.bollalabz-api.entrypoints=http,https"
+      - "traefik.http.routers.bollalabz-api.tls=true"
+      - "traefik.http.routers.bollalabz-api.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.bollalabz-api.priority=100"
+      - "traefik.http.services.bollalabz-api.loadbalancer.server.port=4000"
+    networks:
+      - bollalabz
+      - coolify
+    deploy:
+      resources:
+        limits:
+          memory: 1536M
+
+  web:
+    image: sergiobolla/bollalabz:web
+    container_name: bollalabz-web
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: https://bollalabz.com
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      NEXT_PUBLIC_CLERK_FRONTEND_API: https://clerk.bollalabz.com
+      CLERK_SECRET_KEY: ${CLERK_SECRET_KEY}
+      CLERK_JWKS_URL: https://clerk.bollalabz.com/.well-known/jwks.json
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=coolify"
+      - "traefik.http.routers.bollalabz-web.rule=Host(`bollalabz.com`) || Host(`www.bollalabz.com`)"
+      - "traefik.http.routers.bollalabz-web.entrypoints=http,https"
+      - "traefik.http.routers.bollalabz-web.tls=true"
+      - "traefik.http.routers.bollalabz-web.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.bollalabz-web.priority=10"
+      - "traefik.http.services.bollalabz-web.loadbalancer.server.port=3000"
+    networks:
+      - bollalabz
+      - coolify
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  bollalabz:
+    driver: bridge
+  coolify:
+    external: true

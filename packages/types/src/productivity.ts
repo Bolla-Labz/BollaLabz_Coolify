@@ -1,122 +1,122 @@
+// 08 December 2025 03 45 00
+
 /**
  * Productivity Types (Tasks & Calendar)
+ *
+ * Aligned with database schemas as source of truth:
+ * - packages/db/src/schema/tasks.ts
+ * - packages/db/src/schema/calendar-events.ts
  */
 
-// Task entity
+// Task entity - aligned with database schema
 export interface Task {
+  // Core fields from database
   id: string;
   userId: string;
   title: string;
-  description?: string;
+  description?: string | null;
   status: TaskStatus;
   priority: TaskPriority;
 
-  // Dates
-  dueDate?: string;
-  startDate?: string;
-  completedAt?: string;
+  // Dates (from database)
+  dueDate?: string | null;
+  completedAt?: string | null;
 
-  // Assignment
+  // Contact relationship (from database)
+  contactId?: string | null;
+
+  // Categorization (from database)
+  tags: string[];
+
+  // Timestamps (from database)
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string | null;
+
+  // Extended fields for future use (optional)
+  startDate?: string;
   assigneeId?: string;
   assigneeName?: string;
-  createdBy: string;
-
-  // Organization
+  createdBy?: string;
   projectId?: string;
   projectName?: string;
   parentTaskId?: string;
   subtasks?: Task[];
-  tags: string[];
   category?: string;
-
-  // Progress
   progress?: number;
   estimatedHours?: number;
   actualHours?: number;
-
-  // Recurrence
   recurrence?: RecurrenceRule;
   recurringTaskId?: string;
-
-  // Attachments & links
   attachments?: Attachment[];
   linkedContacts?: string[];
   linkedEvents?: string[];
-
-  // Metadata
   customFields?: Record<string, unknown>;
-  createdAt: string;
-  updatedAt: string;
-
-  // AI suggestions
   aiSuggestions?: AISuggestion[];
 }
 
-export type TaskStatus =
-  | 'pending'
-  | 'in_progress'
-  | 'completed'
-  | 'cancelled'
-  | 'on_hold'
-  | 'blocked';
+// Database-aligned enums
+export type TaskStatus = 'todo' | 'in_progress' | 'done';
 
-export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
+export type TaskPriority = 'low' | 'medium' | 'high';
 
-// Calendar event
+// Calendar event - aligned with database schema
 export interface CalendarEvent {
+  // Core fields from database
   id: string;
   userId: string;
   title: string;
-  description?: string;
-  type: EventType;
+  description?: string | null;
 
-  // Time
+  // Time (from database)
   startTime: string;
   endTime: string;
   allDay: boolean;
-  timezone?: string;
 
-  // Location
-  location?: string;
+  // Location (from database)
+  location?: string | null;
+
+  // Contact associations (from database - JSONB array of contact UUIDs)
+  contactIds?: string[];
+
+  // Reminder configuration (from database - minutes before event)
+  reminderMinutes?: number | null;
+
+  // External calendar integration (from database)
+  externalId?: string | null;
+  externalSource?: CalendarSource | null;
+
+  // Timestamps (from database)
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string | null;
+
+  // Extended fields for future use (optional)
+  type?: EventType;
+  timezone?: string;
   isVirtual?: boolean;
   meetingUrl?: string;
-
-  // Attendees
   organizer?: EventAttendee;
   attendees?: EventAttendee[];
-
-  // Recurrence
   recurrence?: RecurrenceRule;
   recurringEventId?: string;
-
-  // Reminders
   reminders?: Reminder[];
-
-  // Status
-  status: EventStatus;
-  visibility: EventVisibility;
-
-  // Categories
+  status?: EventStatus;
+  visibility?: EventVisibility;
   category?: string;
   tags?: string[];
   color?: string;
-
-  // Links
   linkedTasks?: string[];
   linkedContacts?: string[];
   attachments?: Attachment[];
-
-  // Metadata
-  source?: EventSource;
-  externalId?: string;
   customFields?: Record<string, unknown>;
-  createdAt: string;
-  updatedAt: string;
-
-  // Meeting data
   meetingData?: MeetingData;
 }
 
+// Database-aligned enum
+export type CalendarSource = 'google' | 'outlook' | 'apple' | 'manual';
+
+// Extended enums for future use
 export type EventType =
   | 'meeting'
   | 'appointment'
@@ -133,14 +133,6 @@ export type EventStatus =
   | 'completed';
 
 export type EventVisibility = 'public' | 'private' | 'confidential';
-
-export type EventSource =
-  | 'manual'
-  | 'google'
-  | 'outlook'
-  | 'apple'
-  | 'import'
-  | 'api';
 
 // Event attendee
 export interface EventAttendee {

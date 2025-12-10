@@ -2,6 +2,8 @@
  * @repo/types - Shared TypeScript types for BollaLabz
  *
  * This package exports all shared types used across the monorepo
+ *
+ * Updated: 08 December 2025 20 45 00
  */
 
 // Re-export all API types
@@ -15,6 +17,12 @@ export * from './voice';
 
 // Re-export all Productivity types
 export * from './productivity';
+
+// Re-export all Telnyx types
+export * from './telnyx';
+
+// Re-export all Twilio types (legacy/compatibility)
+export * from './twilio';
 
 // Common utility types
 export type Nullable<T> = T | null;

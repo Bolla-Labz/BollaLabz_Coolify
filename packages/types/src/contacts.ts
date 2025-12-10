@@ -1,45 +1,56 @@
 /**
  * Contact Management Types
+ *
+ * Updated: 08 December 2025 14 32 45
+ *
+ * NOTE: This type definition is aligned with the database schema at
+ * packages/db/src/schema/contacts.ts
  */
 
-// Core contact entity
+// Core contact entity - matches database schema
 export interface Contact {
+  // Primary key
   id: string;
-  firstName: string;
-  lastName: string;
-  email?: string;
-  phone?: string;
-  alternatePhone?: string;
-  company?: string;
-  jobTitle?: string;
-  avatar?: string;
 
-  // Address information
-  address?: Address;
+  // Personal information
+  firstName: string | null;
+  lastName: string | null;
+  email: string | null;
+  phone: string | null;
 
-  // Contact metadata
+  // Professional information
+  company: string | null;
+  jobTitle: string | null;
+
+  // Additional details
+  notes: string | null;
   tags: string[];
-  category?: ContactCategory;
-  source?: ContactSource;
-  importance?: 'low' | 'medium' | 'high' | 'critical';
+  avatarUrl: string | null;
 
-  // Relationship data
-  relationships?: Relationship[];
+  // Relationship tracking
+  relationshipScore: RelationshipScore;
+  lastContactedAt: Date | null;
 
-  // Custom fields
-  customFields?: Record<string, unknown>;
+  // Vector embedding for semantic search (stored as text in DB)
+  embedding: string | null;
 
-  // System fields
-  createdAt: string;
-  updatedAt: string;
-  createdBy?: string;
-  lastInteraction?: string;
-  interactionCount?: number;
+  // System timestamps
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
 
-  // Sync status
-  syncStatus?: SyncStatus;
-  externalIds?: Record<string, string>;
+  // Computed/derived fields (not in database, computed at runtime)
+  // These can be added by the API layer when needed
+  displayName?: string; // Computed from firstName + lastName
+  avatar?: string; // Alias for avatarUrl for backwards compatibility
+  lastInteraction?: Date; // Alias for lastContactedAt for backwards compatibility
+  interactionCount?: number; // Computed from related interactions table
+  category?: ContactCategory; // Can be derived from tags or relationship score
+  importance?: 'low' | 'medium' | 'high' | 'critical'; // Can be derived from relationshipScore
 }
+
+// Relationship score type - matches database enum
+export type RelationshipScore = 'cold' | 'warm' | 'hot' | 'neutral' | 'vip';
 
 // Address type
 export interface Address {
@@ -73,6 +84,7 @@ export type ContactSource =
   | 'linkedin'
   | 'facebook'
   | 'api'
+  | 'database'
   | 'other';
 
 // Relationship between contacts
@@ -103,28 +115,73 @@ export interface SyncStatus {
   error?: string;
 }
 
-// Create contact input
+// Create contact input - aligned with database schema
 export interface CreateContactInput {
-  firstName: string;
-  lastName: string;
+  // Personal information
+  firstName?: string;
+  lastName?: string;
   email?: string;
   phone?: string;
-  alternatePhone?: string;
+
+  // Professional information
   company?: string;
   jobTitle?: string;
-  avatar?: string;
-  address?: Address;
+
+  // Additional details
+  notes?: string;
   tags?: string[];
+  avatarUrl?: string;
+
+  // Relationship tracking
+  relationshipScore?: RelationshipScore;
+  lastContactedAt?: Date;
+
+  // Vector embedding
+  embedding?: string;
+
+  // Legacy/convenience fields (will be mapped to actual DB fields)
+  avatar?: string; // Maps to avatarUrl
+  lastInteraction?: Date; // Maps to lastContactedAt
+
+  // Extended fields (not in DB, used for API layer enrichment)
   category?: ContactCategory;
-  source?: ContactSource;
   importance?: 'low' | 'medium' | 'high' | 'critical';
-  relationships?: Relationship[];
-  customFields?: Record<string, unknown>;
+  source?: ContactSource;
 }
 
-// Update contact input
-export interface UpdateContactInput extends Partial<CreateContactInput> {
+// Update contact input - aligned with database schema
+export interface UpdateContactInput {
   id: string;
+
+  // Personal information
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+
+  // Professional information
+  company?: string;
+  jobTitle?: string;
+
+  // Additional details
+  notes?: string;
+  tags?: string[];
+  avatarUrl?: string;
+
+  // Relationship tracking
+  relationshipScore?: RelationshipScore;
+  lastContactedAt?: Date;
+
+  // Vector embedding
+  embedding?: string;
+
+  // Legacy/convenience fields
+  avatar?: string; // Maps to avatarUrl
+  lastInteraction?: Date; // Maps to lastContactedAt
+
+  // Extended fields
+  category?: ContactCategory;
+  importance?: 'low' | 'medium' | 'high' | 'critical';
 }
 
 // Contact group/list
