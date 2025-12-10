@@ -1,31 +1,37 @@
-# 10 December 2025 07 10 00
-# BollaLabz Web - Production-Optimized Next.js Standalone Build
-# Based on RAG: coolify-examples/turbo-nextjs/Dockerfile
-
-# ============================================
-# Base image with pnpm
-# ============================================
-FROM node:22-alpine AS base
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable && corepack prepare pnpm@9.14.0 --activate
+# 10 December 2025 09 10 00
+# BollaLabz Web - Coolify-Compatible Next.js Standalone Build
+# Simplified for Coolify deployment (no BuildKit cache mounts)
 
 # ============================================
 # Build Stage
 # ============================================
-FROM base AS builder
+FROM node:22-alpine AS builder
 WORKDIR /app
+
+# Install pnpm
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable && corepack prepare pnpm@9.14.0 --activate
 
 # Copy .npmrc for hoisted node_modules
 COPY .npmrc ./
 
-# Copy all files (monorepo structure)
-COPY . .
+# Copy dependency manifests
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json turbo.json ./
+COPY packages/db/package.json ./packages/db/
+COPY packages/types/package.json ./packages/types/
+COPY packages/config/package.json ./packages/config/
+COPY packages/ui/package.json ./packages/ui/
+COPY apps/web/package.json ./apps/web/
 
-# Install dependencies with hoisted node_modules
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+# Install dependencies
+RUN pnpm install --frozen-lockfile
 
-# Build arguments for Clerk
+# Copy source code
+COPY packages ./packages
+COPY apps/web ./apps/web
+
+# Build arguments for Clerk (must come after source copy for correct ordering)
 ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 ARG NEXT_PUBLIC_API_URL
 
@@ -51,7 +57,7 @@ RUN apk add --no-cache curl dumb-init && apk upgrade --no-cache
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Copy standalone output (following RAG turbo-nextjs pattern)
+# Copy standalone output
 COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/static ./apps/web/.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/apps/web/public ./apps/web/public
@@ -66,10 +72,10 @@ ENV HOSTNAME="0.0.0.0"
 EXPOSE 3000
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
-    CMD curl -f http://localhost:3000/api/health || curl -f http://localhost:3000 || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:3000 || exit 1
 
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 
-# Run server (path depends on standalone output structure)
+# Run server
 CMD ["node", "apps/web/server.js"]
